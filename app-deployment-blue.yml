@@ -17,6 +17,7 @@ spec:
       containers:
       - name: app
         image: udaypagidimari/bankapp:blue  # Replace with your Blue version image
+        imagePullPolicy: Always
         env:
         - name: DB_HOST
           value: "mysql"  # MySQL service name

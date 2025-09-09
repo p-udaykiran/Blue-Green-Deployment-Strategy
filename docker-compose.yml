@@ -1,0 +1,44 @@
+version: '1'   # Docker Compose file format version
+
+services:
+  mysql:
+    image: mysql:5.7                  # Use official MySQL version 5.7 image
+    container_name: mysql             # Name the container "mysql"
+    environment:
+      MYSQL_ROOT_PASSWORD: password   # Root user password for MySQL
+      MYSQL_DATABASE: test_db         # Create a default database named "test_db"
+    ports:
+      - "3306:3306"                   # Map host port 3306 to container port 3306
+    volumes:
+      - mysql_data:/var/lib/mysql     # Persist MySQL data in a Docker volume
+    networks:
+      - app-network                   # Connect MySQL container to custom network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]  # Check if MySQL is running by pinging localhost
+      interval: 10s                   # Run healthcheck every 10 seconds
+      timeout: 5s                     # Healthcheck times out if no response in 5 seconds
+      retries: 3                      # Consider container unhealthy after 3 failed checks
+
+  app:
+    build: .                          # Build the app image from the Dockerfile in the current directory
+    container_name: app               # Name the container "app"
+    environment:
+      DB_HOST: mysql                  # Hostname for DB (the service name "mysql")
+      DB_USER: root                   # MySQL username
+      DB_PASSWORD: password           # MySQL password
+      DB_NAME: test_db                # MySQL database name
+      PORT: 5000                      # App will listen on port 5000 inside the container
+    ports:
+      - "5000:5000"                   # Map host port 5000 to container port 5000
+    depends_on:
+      mysql:
+        condition: service_healthy    # Start app container only when MySQL is healthy
+    networks:
+      - app-network                   # Connect app container to same custom network
+
+networks:
+  app-network:
+    driver: bridge                    # Use bridge network driver for communication between containers
+
+volumes:
+  mysql_data:                         # Named volume to persist MySQL data

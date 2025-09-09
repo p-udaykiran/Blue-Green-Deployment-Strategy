@@ -7,7 +7,7 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: jenkins
+  name: sa
   namespace: webapps
 ```
 
@@ -15,44 +15,52 @@ metadata:
 
 
 ```yaml
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
+apiVersion: rbac.authorization.k8s.io/v1  # This is the API version for RBAC resources
+kind: Role                                # Kind 'Role' means permissions are scoped to a specific namespace
 metadata:
-  name: app-role
-  namespace: webapps
+  name: app-role                          # Name of the Role
+  namespace: webapps                      # The namespace where this Role applies (webapps)
 rules:
   - apiGroups:
-        - ""
-        - apps
-        - autoscaling
-        - batch
-        - extensions
-        - policy
-        - rbac.authorization.k8s.io
+        - ""                             # Core API group (pods, services, secrets, configmaps, etc.)
+        - apps                           # API group for deployments, replicasets, statefulsets
+        - autoscaling                    # For HorizontalPodAutoscalers
+        - batch                          # For jobs and cronjobs
+        - extensions                     # Older resources like ingress (used in some versions)
+        - policy                         # PodSecurityPolicies, if used
+        - rbac.authorization.k8s.io      # For roles, rolebindings, etc.
     resources:
-      - pods
-      - secrets
-      - componentstatuses
-      - configmaps
-      - daemonsets
-      - deployments
-      - events
-      - endpoints
-      - horizontalpodautoscalers
-      - ingress
-      - jobs
-      - limitranges
-      - namespaces
-      - nodes
-      - pods
-      - persistentvolumes
-      - persistentvolumeclaims
-      - resourcequotas
-      - replicasets
-      - replicationcontrollers
-      - serviceaccounts
-      - services
-    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+      - pods                            # Pods in the namespace
+      - secrets                         # Secrets
+      - componentstatuses               # Cluster component statuses (rarely used)
+      - configmaps                      # ConfigMaps
+      - daemonsets                       # DaemonSets
+      - deployments                      # Deployments
+      - events                           # Events in the namespace
+      - endpoints                        # Service endpoints
+      - horizontalpodautoscalers         # HPA objects
+      - ingress                          # Ingress resources
+      - jobs                             # Jobs
+      - limitranges                       # Resource limit definitions
+      - namespaces                        # Namespace info (read-only)
+      - nodes                             # Node info (read-only)
+      - persistentvolumes                 # Persistent Volumes
+      - persistentvolumeclaims            # PVCs
+      - resourcequotas                    # Resource quotas in namespace
+      - replicasets                       # ReplicaSets
+      - replicationcontrollers            # ReplicationControllers
+      - serviceaccounts                   # ServiceAccounts
+      - services                          # Services
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"] 
+    # "verbs" define what actions are allowed on the resources:
+    # - get: read a single object
+    # - list: list all objects of this type
+    # - watch: monitor for changes
+    # - create: create new objects
+    # - update: modify existing objects
+    # - patch: partially update objects
+    # - delete: remove objects
+
 ```
 
 ### Bind the role to service account
